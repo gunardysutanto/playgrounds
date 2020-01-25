@@ -1,0 +1,56 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '2.2.1.RELEASE'
+    id 'com.bmuschko.docker-spring-boot-application' version '6.1.2'
+    id 'com.github.spotbugs' version '3.0.0'
+}
+
+group 'playgrouds'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = JavaVersion.VERSION_11
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.2.1.RELEASE'
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-undertow', version: '2.2.1.RELEASE'
+    compileOnly group: 'org.projectlombok', name: 'lombok', version: '1.18.10'
+    annotationProcessor group: 'org.projectlombok', name: 'lombok', version: '1.18.10'
+    testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: '2.2.1.RELEASE'
+}
+
+configurations {
+    compile.exclude(module: 'spring-boot-starter-tomcat')
+}
+
+test {
+    useJUnitPlatform()
+}
+
+spotbugs {
+    toolVersion = '4.0.0-RC1'
+}
+
+tasks.withType(com.github.spotbugs.SpotBugsTask) {
+    effort = 'max'
+    reports {
+        xml.enabled = false
+        html.enabled = true
+    }
+}
+
+docker {
+    springBootApplication {
+        baseImage = 'amazoncorretto:11.0.6'
+        maintainer = 'Gunardy Sutanto<gunardy.sutanto@gmail.com>'
+        images = ['hello-world:latest']
+        jvmArgs = ['-Xmx256m']
+    }
+}
+
+task buildComplete {
+   dependsOn(build,dockerBuildImage)
+}
